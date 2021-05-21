@@ -3,15 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vlc="clr-namespace:Vlc.DotNet.Wpf;assembly=Vlc.DotNet.Wpf"
+        xmlns:controls="clr-namespace:MusicPlayer.Controls"
         xmlns:local="clr-namespace:MusicPlayer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="400">
 
+    <Window.Resources>
+        <controls:TrackToInlineConverter x:Key="trackToInlineConverter" />
+    </Window.Resources>
+    
     <Grid>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
             <ColumnDefinition />
             <ColumnDefinition />
             <ColumnDefinition />
@@ -23,23 +26,68 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <TreeView x:Name="treeView" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0">
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Path=Nodes}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock IsEnabled="False" Text="{Binding Icon}" TextWrapping="Wrap"/>
-                        <TextBlock IsEnabled="False" Text="{Binding Name}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
-        
-        <!--C:\Users\ne_hochu\Desktop\Запрещённые Барабанщики - Убили Негра.mp3-->
-        <MediaElement x:Name="MediaPlayer" Visibility="Collapsed"/>
-        <ListView x:Name="ViewTracks" Grid.RowSpan="2" Grid.ColumnSpan="3" 
-                  Grid.Row="0" Grid.Column="1" />
+        <TabControl Grid.Row="0" Grid.RowSpan="3" 
+                    Grid.Column="0" Grid.ColumnSpan="3"
+                    x:Name="myTabControl">
+            <TabItem Header="Tree">
+                <TreeView x:Name="treeView" MouseDoubleClick="TrackDoubleClick">
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Path=Nodes}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock IsEnabled="False" Text="{Binding Icon}" TextWrapping="Wrap"/>
+                                <TextBlock IsEnabled="False" Text="{Binding Name}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                    <TreeView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Play now" Click="ContextTrackPlayNow"/>
+                            <MenuItem Header="Play next" Click="ContextTrackPlayNext"/>
+                            <MenuItem Header="Add to queue" Click="ContextAddToQueueClick"/>
+                            <MenuItem Header="Like" />
+                        </ContextMenu>
+                    </TreeView.ContextMenu>
+                </TreeView>
+            </TabItem>
+            <TabItem Header="Next">
+                <ListView x:Name="nextListView" MouseDoubleClick="TrackDoubleClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Play now" Click="ContextTrackPlayNow"/>
+                            <MenuItem Header="Play next" Click="ContextTrackPlayNext"/>
+                            <MenuItem Header="Add to queue" Click="ContextAddToQueueClick"/>
+                            <MenuItem Header="Remove from queue" Click="ContextRemoveFromQueueclick"/>
+                            <MenuItem Header="Like" />
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                </ListView>
+            </TabItem>
+            <TabItem Header="History">
+                <ListView x:Name="historyListView" MouseDoubleClick="ListViewDoubleClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </TabItem>
+            <TabItem Header="Liked">
+                <Label Content="Liked..." />
+            </TabItem>
+        </TabControl>
 
-        <Grid Grid.Row="2" Grid.ColumnSpan="3" Grid.Column="1">
+        <MediaElement x:Name="MediaPlayer" Visibility="Collapsed" MediaEnded="MediaPlayer_MediaEnded"/>
+
+        <Grid Grid.Row="2" Grid.ColumnSpan="3" Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.3*"/>
                 <RowDefinition />
@@ -54,9 +102,9 @@
 
             <MediaElement x:Name="playerElement" MediaOpened="PlayerElementSourceUpdated" />
             <Slider x:Name="playerSlider" Grid.Row="0" Grid.ColumnSpan="3" ValueChanged="SliderValueChanged" />
-            
+
             <!-- Maximum="{Binding ElementName=playerElement, Path=Position.TotalSeconds}" -->
-            <Button Content="⏮️" FontSize="35" Grid.Column="0" Grid.Row="2" />
+            <Button Content="⏮️" FontSize="35" Grid.Column="0" Grid.Row="2" Click="PlayPrevButtonClick"/>
             <Button Content="▶️" x:Name="playButton" FontSize="50" HorizontalAlignment="Center" 
                     VerticalAlignment="Bottom" Width="100" Height="100" Grid.Column="1" 
                     Grid.Row="1"  Grid.RowSpan="2" Click="PlayPauseClick">
@@ -66,14 +114,8 @@
                     </Style>
                 </Button.Resources>
             </Button>
-            <Button Content="⏭️" FontSize="35" Grid.Column="2" Grid.Row="2" />
+            <Button Content="⏭️" FontSize="35" Grid.Column="2" Grid.Row="2" Click="PlayNextButtonClick"/>
 
         </Grid>
-
-        <!--
-        <Button Content="&lt;" Grid.Column="1" Grid.Row="2" />
-        <Button Content="||" Grid.Column="2" Grid.Row="2" />
-        <Button Content="&gt;" Grid.Column="3" Grid.Row="2" />
-        -->
     </Grid>
 </Window>

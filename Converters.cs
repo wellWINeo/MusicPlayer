@@ -7,24 +7,18 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace MusicPlayer
+namespace MusicPlayer.Controls
 {
-    class TimeSpanToDoubleConverter : IValueConverter
+    class TrackToInlineConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value != null)
-                return ((TimeSpan)value).TotalSeconds;
-            else
-                return 0;
+            throw new NotImplementedException();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value != null)
-                return TimeSpan.FromSeconds(System.Convert.ToDouble(value));
-            else
-                return 0;
+            throw new NotImplementedException();
         }
     }
 }

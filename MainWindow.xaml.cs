@@ -27,16 +27,35 @@ namespace MusicPlayer
         public DispatcherTimer timer = new DispatcherTimer();
         public ObservableCollection<Node> nodes { get; set; }
         public string MusicFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+        public ObservableCollection<Node> TrackList = new ObservableCollection<Node>();
+        public History trackHistory;
+        public Node CurrentNode;
+        int TrackListIndex;
+
         public MainWindow()
         {
+            string historyDir = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "history");
+            if (!Directory.Exists(historyDir))
+                Directory.CreateDirectory(historyDir);
+            trackHistory = new History(historyDir);
+
             InitializeComponent();
+            nextListView.ItemsSource = TrackList;
+            historyListView.ItemsSource = trackHistory.HistoryList;
+
             timer.Interval = TimeSpan.FromSeconds(0.1);
             timer.Tick += new EventHandler(timer_Tick);
             timer.IsEnabled = true;
 
             playerElement.LoadedBehavior = MediaState.Manual;
-            playerElement.Source = new Uri(MusicFolder + "\\Запрещённые Барабанщики - Убили Негра.mp3");
-            playerElement.Play();
+            //playerElement.Source = new Uri(MusicFolder + "\\Запрещённые Барабанщики - Убили Негра.mp3");
+            //playerElement.Play();
+
+            TrackList.Add(new Node()
+            {
+                Name = "Запрещённые Барабанщики - Убили Негра.mp3",
+            });
+            TrackListIndex = 0;
 
             nodes = new ObservableCollection<Node>(){
                 new Node()
@@ -97,7 +116,9 @@ namespace MusicPlayer
             {
                 playerSlider.Maximum = playerElement.NaturalDuration.TimeSpan.TotalSeconds;
                 playerSlider.Value = playerElement.Position.TotalSeconds;
-                //MessageBox.Show($"{playerSlider.Value} - {playerElement.NaturalDuration.TimeSpan.TotalSeconds}");
+                playerElement.LoadedBehavior = MediaState.Manual;
+                playerElement.Play();
+                playButton.Content = "||";
             }
         }
 
@@ -115,12 +136,111 @@ namespace MusicPlayer
             if (isPause)
             {
                 playerElement.LoadedBehavior = MediaState.Pause;
-                playButton.Content = "||";
+                playButton.Content = "▶️";
             }
             else
             {
                 playerElement.LoadedBehavior = MediaState.Play;
-                playButton.Content = "▶️";
+                playButton.Content = "||";
+            }
+        }
+
+        private void TrackDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Node node = this.getSelectedNode();
+            if (node != null)
+            {
+                trackHistory.Write(node);
+                TrackList[TrackListIndex] = node;
+                playerElement.Source = new Uri(node.FullName);
+            }
+        }
+
+        private void ListViewDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ListView listView = sender as ListView;
+            if (listView.SelectedItem != null)
+            {
+                Node node = listView.SelectedItem as Node;
+                trackHistory.Write(node);
+                TrackList[TrackListIndex] = node;
+                playerElement.Source = new Uri(node.FullName);
+            }
+        }
+
+        private void MediaPlayer_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            if (TrackListIndex + 1 >= TrackList.Count) return;
+            playerElement.Source = new Uri(TrackList[++TrackListIndex].FullName);
+            trackHistory.Write(TrackList[TrackListIndex]);
+            nextListView.SelectedItem = TrackList[TrackListIndex];
+        }
+
+        private void ContextTrackPlayNow(object sender, RoutedEventArgs e)
+        {
+            TrackDoubleClick(sender, null);
+        }
+
+        private void ContextTrackPlayNext(object sender, RoutedEventArgs e)
+        {
+            Node node = this.getSelectedNode();
+            if (node != null)
+                TrackList.Insert(TrackListIndex + 1, node);
+
+        }
+
+        private void ContextAddToQueueClick(object sender, RoutedEventArgs e)
+        {
+            Node node = this.getSelectedNode();
+            if (node != null)
+                TrackList.Add(node);
+        }
+
+        private void ContextRemoveFromQueueclick(object sender, RoutedEventArgs e)
+        {
+            Node node = this.getSelectedNode();
+            if (node != null)
+            {
+                if (TrackList[TrackListIndex].Equals(node))
+                    TrackListIndex = TrackListIndex < TrackList.Count - 1 ?
+                        ++TrackListIndex :
+                        --TrackListIndex;
+                TrackList.Remove(node);
+            }
+        }
+
+        private Node getSelectedNode()
+        {
+            return myTabControl.SelectedIndex switch
+            {
+                0 => treeView.SelectedItem as Node,
+                1 => nextListView.SelectedItem as Node,
+                2 => historyListView.SelectedItem as Node,
+                // here will be liked list view...
+                _ => null,
+            };
+        }
+
+        private void PlayNextButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (TrackListIndex < TrackList.Count - 1)
+            {
+                ++TrackListIndex;
+                playerElement.Source = new Uri(TrackList[TrackListIndex].FullName);
+            } else {
+                MessageBox.Show("Playing last track!");
+            }
+        }
+
+        private void PlayPrevButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (TrackListIndex > 0)
+            {
+                --TrackListIndex;
+                playerElement.Source = new Uri(TrackList[TrackListIndex].FullName);
+            } else
+            {
+                MessageBox.Show("Playing first track!");
             }
         }
     }
