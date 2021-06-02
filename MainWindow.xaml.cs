@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Collections.ObjectModel;
+using MusicPlayerApi;
 
 namespace MusicPlayer
 {
@@ -24,8 +25,9 @@ namespace MusicPlayer
     public partial class MainWindow : Window
     {
         bool isPause = false;
+        public Client client;
         public DispatcherTimer timer = new DispatcherTimer();
-        public ObservableCollection<Node> nodes { get; set; }
+        public ObservableCollection<Track> TracksCollection { get; set; }
         public string MusicFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         public ObservableCollection<Node> TrackList = new ObservableCollection<Node>();
         public History trackHistory;
@@ -34,12 +36,19 @@ namespace MusicPlayer
 
         public MainWindow()
         {
+
+            var client = new Client("", "192.168.122.1", 8000);
+
+            Utils.Init(client);
+
             string historyDir = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "history");
             if (!Directory.Exists(historyDir))
                 Directory.CreateDirectory(historyDir);
             trackHistory = new History(historyDir);
 
             InitializeComponent();
+            TracksCollection = new ObservableCollection<Track>();
+            tracksView.ItemsSource = TracksCollection;
             nextListView.ItemsSource = TrackList;
             historyListView.ItemsSource = trackHistory.HistoryList;
 
@@ -51,58 +60,17 @@ namespace MusicPlayer
             //playerElement.Source = new Uri(MusicFolder + "\\Запрещённые Барабанщики - Убили Негра.mp3");
             //playerElement.Play();
 
-            TrackList.Add(new Node()
+            var tracks = client.GetAllTracks();
+            foreach (var track in tracks)
             {
-                Name = "Запрещённые Барабанщики - Убили Негра.mp3",
-            });
+                TracksCollection.Add(track);
+            }
+            MessageBox.Show(TracksCollection.Count.ToString());
             TrackListIndex = 0;
-
-            nodes = new ObservableCollection<Node>(){
-                new Node()
-                {
-                    Icon = string.Empty,
-                    FullName = MusicFolder,
-                    Name = "Music",
-                    Nodes = new ObservableCollection<Node>()
-                }
-            };
             
-           
-            foreach (var dir in Directory.GetDirectories(MusicFolder))
-            {
-                nodes[0].Nodes.Add(new Node()
-                {
-                    Icon = "📁",
-                    FullName = dir,
-                    Name = System.IO.Path.GetFileName(dir),
-                    Nodes = new ObservableCollection<Node>()
-                });
-
-                foreach(var file in Directory.GetFiles(dir))
-                {
-                    nodes[0].Nodes[nodes.Count - 1].Nodes.Add(new Node()
-                    {
-                        Icon = "♫",
-                        FullName = file,
-                        Name = System.IO.Path.GetFileName(file)
-                    });
-                }
-            }
-
-            foreach(var file in Directory.GetFiles(MusicFolder))
-            {
-                nodes[0].Nodes.Add(new Node()
-                {
-                    Icon = "♫",
-                    FullName = file,
-                    Name = System.IO.Path.GetFileName(file)
-                });
-            }
-
-            treeView.ItemsSource = nodes;
-
-
         }
+
+
 
         private void timer_Tick(object sender, EventArgs e)
         {
@@ -213,7 +181,7 @@ namespace MusicPlayer
         {
             return myTabControl.SelectedIndex switch
             {
-                0 => treeView.SelectedItem as Node,
+                0 => tracksView.SelectedItem as Node,
                 1 => nextListView.SelectedItem as Node,
                 2 => historyListView.SelectedItem as Node,
                 // here will be liked list view...

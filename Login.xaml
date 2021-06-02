@@ -1,0 +1,26 @@
+﻿<Window x:Class="MusicPlayer.Login"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicPlayer"
+        mc:Ignorable="d"
+        Title="Login" Height="250" Width="200">
+    <Grid>
+        <StackPanel VerticalAlignment="Center">
+            <Label Content="Username:" />
+            <TextBox x:Name="UsernameBox" />
+            
+            <Label />
+            
+            <Label Content="Password: " />
+            <PasswordBox x:Name="PasswordBox" />
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Login" Click="LoginClick"/>
+                <Label />
+                <Button Content="Register" Click="RegisterClick"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

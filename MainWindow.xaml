@@ -29,25 +29,28 @@
         <TabControl Grid.Row="0" Grid.RowSpan="3" 
                     Grid.Column="0" Grid.ColumnSpan="3"
                     x:Name="myTabControl">
-            <TabItem Header="Tree">
-                <TreeView x:Name="treeView" MouseDoubleClick="TrackDoubleClick">
-                    <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding Path=Nodes}">
+            <TabItem Header="Tracks">
+                <ListView x:Name="tracksView" MouseDoubleClick="TrackDoubleClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock IsEnabled="False" Text="{Binding Icon}" TextWrapping="Wrap"/>
-                                <TextBlock IsEnabled="False" Text="{Binding Name}" TextWrapping="Wrap"/>
+                                <TextBlock IsEnabled="False" Text="{Binding title}" TextWrapping="Wrap"/>
+                                <TextBlock IsEnabled="False" Text="{Binding artist}" TextWrapping="Wrap"/>
                             </StackPanel>
-                        </HierarchicalDataTemplate>
-                    </TreeView.ItemTemplate>
-                    <TreeView.ContextMenu>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Play now" Click="ContextTrackPlayNow"/>
                             <MenuItem Header="Play next" Click="ContextTrackPlayNext"/>
                             <MenuItem Header="Add to queue" Click="ContextAddToQueueClick"/>
                             <MenuItem Header="Like" />
                         </ContextMenu>
-                    </TreeView.ContextMenu>
-                </TreeView>
+                    </ListView.ContextMenu>
+                </ListView>
+            </TabItem>
+            <TabItem Header="Playlists">
+                
             </TabItem>
             <TabItem Header="Next">
                 <ListView x:Name="nextListView" MouseDoubleClick="TrackDoubleClick">
