@@ -3,67 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using MusicPlayerApi;
+using System.Net;
+using System.Windows;
+
 namespace MusicPlayer
 {
     public class History
     {
-        public ObservableCollection<Node> HistoryList = new ObservableCollection<Node>();
-        private string pathCommited, pathUncommited;
-        public bool isOnline;
+        public ObservableCollection<MusicPlayerApi.History> HistoryList = 
+            new ObservableCollection<MusicPlayerApi.History>();
+        public Client client;
         
-        public History(string path, string nameCommited = "commited",
-                       string nameUncommited = "uncommited", bool isOnline = false)
+        public History(Client client)
         {
-            this.pathCommited = Path.Combine(path, nameCommited);
-            this.pathUncommited = Path.Combine(path, nameUncommited);
-
-            if (!File.Exists(this.pathCommited))
-                File.Create(this.pathCommited);
-
-            if (!File.Exists(this.pathUncommited))
-                File.Create(this.pathUncommited);
-
-            StreamReader commitedReader = new StreamReader(this.pathCommited);
-            StreamReader uncommitedReader = new StreamReader(this.pathUncommited);
-
-            while (!commitedReader.EndOfStream)
-            {
-                string jsonString = commitedReader.ReadLine();
-                this.HistoryList.Add(JsonSerializer.Deserialize<Node>(jsonString));
-            }
-
-            while (!uncommitedReader.EndOfStream)
-            {
-                string jsonString = uncommitedReader.ReadLine();
-                this.HistoryList.Add(JsonSerializer.Deserialize<Node>(jsonString));
-            }
-
-            commitedReader.Dispose();
-            uncommitedReader.Dispose();
-
+            this.client = client;
+            Task.Factory.StartNew(() => HistoryUpdater());
         }
 
-        public void Write(Node track)
+        public void Write(MusicPlayerApi.History track)
         {
             this.HistoryList.Add(track);
-            string json = JsonSerializer.Serialize<Node>(track);
-            File.AppendAllLines(this.pathUncommited, new string[]{ json });
+
         }
 
-        public async void Flush()
+        public void HistoryUpdater()
         {
-            List<string> JsonList = new List<string>();
-            using (StreamReader reader = new StreamReader(this.pathUncommited))
+            List<MusicPlayerApi.History> history = new List<MusicPlayerApi.History>();
+            try
             {
-                while (!reader.EndOfStream);
-                    JsonList.Add(await reader.ReadLineAsync());
+                history = client.GetHistory();
+            } catch (WebException e)
+            {
+                MessageBox.Show(e.Message);
             }
-            await File.AppendAllLinesAsync(this.pathCommited, JsonList.ToArray());
+            
+            foreach (MusicPlayerApi.History record in history)
+            {
+                this.HistoryList.Add(record);
+            }
+            Thread.Sleep(10000);
         }
+
     }
 }

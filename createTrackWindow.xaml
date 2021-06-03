@@ -1,0 +1,28 @@
+﻿<Window x:Class="MusicPlayer.createTrackWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicPlayer"
+        mc:Ignorable="d"
+        Title="createTrackWindow" Height="300" Width="250">
+    <Grid>
+        <StackPanel>
+            <Label Content="Title:" />
+            <TextBox x:Name="titleBox" />
+
+            <Label Content="Artist:" />
+            <TextBox x:Name="artistBox" />
+
+            <Label Content="Genre:" />
+            <TextBox x:Name="genreBox" />
+
+            <Label Content="Year:" />
+            <TextBox x:Name="yearBox" />
+
+            <Label />
+            <Button Content="Submit" HorizontalAlignment="Center" Click="createTrackClick"/>
+        </StackPanel>
+        
+    </Grid>
+</Window>

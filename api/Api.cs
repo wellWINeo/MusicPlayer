@@ -358,8 +358,10 @@ namespace MusicPlayerApi
             {
                 var jsonString = streamReader.ReadToEnd();
                 likes = JsonSerializer.Deserialize<List<int>>(jsonString);
-            } 
+            }
 
+            if (likes == null)
+                likes = new List<int>();
             return likes;
         }
 
@@ -375,7 +377,8 @@ namespace MusicPlayerApi
                 var jsonString = streamReader.ReadToEnd();
                 history = JsonSerializer.Deserialize<List<History>>(jsonString);
             }
-            
+            if (history == null)
+                history = new List<History>();
             return history;
         }
 
@@ -438,6 +441,9 @@ namespace MusicPlayerApi
                 string jsonString = streamReader.ReadToEnd();
                 playlists = JsonSerializer.Deserialize<List<Playlist>>(jsonString);
             }
+
+            if (playlists == null)
+                playlists = new List<Playlist>();
 
             return playlists;
         }

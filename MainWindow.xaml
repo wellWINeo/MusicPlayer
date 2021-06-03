@@ -8,10 +8,6 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="400">
 
-    <Window.Resources>
-        <controls:TrackToInlineConverter x:Key="trackToInlineConverter" />
-    </Window.Resources>
-    
     <Grid>
 
         <Grid.ColumnDefinitions>
@@ -21,12 +17,26 @@
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
+            <RowDefinition Height="0.2*"/>
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <TabControl Grid.Row="0" Grid.RowSpan="3" 
+        <ToolBar VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="3">
+            <Menu>
+                <MenuItem Header="Profile">
+                    <MenuItem Header="Edit" Click="EditProfileClick"/>
+                    <MenuItem Header="Buy" />
+                    <MenuItem Header="Logout" />
+                </MenuItem>
+                <MenuItem Header="New track" Click="CreateTrackClick"/>
+                <MenuItem Header="Refresh" />
+                <MenuItem Header="Exit" />
+            </Menu>
+        </ToolBar>
+
+        <TabControl Grid.Row="1" Grid.RowSpan="3" 
                     Grid.Column="0" Grid.ColumnSpan="3"
                     x:Name="myTabControl">
             <TabItem Header="Tracks">
@@ -34,8 +44,14 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="♫ " />
                                 <TextBlock IsEnabled="False" Text="{Binding title}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
                                 <TextBlock IsEnabled="False" Text="{Binding artist}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding genre}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding year}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -44,20 +60,31 @@
                             <MenuItem Header="Play now" Click="ContextTrackPlayNow"/>
                             <MenuItem Header="Play next" Click="ContextTrackPlayNext"/>
                             <MenuItem Header="Add to queue" Click="ContextAddToQueueClick"/>
-                            <MenuItem Header="Like" />
+                            <MenuItem Header="Edit" Click="ContextEditTrackClick" />
+                            <MenuItem Header="Upload" Click="UploadTrackClick" />
+                            <MenuItem Header="Like" Click="ContextLikeClick"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                 </ListView>
             </TabItem>
             <TabItem Header="Playlists">
-                
+                <ListView x:Name="playlistsView">
+
+                </ListView>
             </TabItem>
             <TabItem Header="Next">
                 <ListView x:Name="nextListView" MouseDoubleClick="TrackDoubleClick">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding Path=Name}" />
+                                <TextBlock Text="♫ " />
+                                <TextBlock IsEnabled="False" Text="{Binding title}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding artist}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding genre}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding year}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -77,20 +104,36 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding Path=Name}" />
+                                <TextBlock Text="🕑 " />
+                                <TextBlock IsEnabled="False" Text="{Binding time}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </TabItem>
             <TabItem Header="Liked">
-                <Label Content="Liked..." />
+                <ListView x:Name="likesView" MouseDoubleClick="TrackDoubleClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="♫ " />
+                                <TextBlock IsEnabled="False" Text="{Binding title}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding artist}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding genre}" TextWrapping="Wrap"/>
+                                <TextBlock Text=", " />
+                                <TextBlock IsEnabled="False" Text="{Binding year}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </TabItem>
         </TabControl>
 
         <MediaElement x:Name="MediaPlayer" Visibility="Collapsed" MediaEnded="MediaPlayer_MediaEnded"/>
 
-        <Grid Grid.Row="2" Grid.ColumnSpan="3" Grid.Column="0">
+        <Grid Grid.Row="3" Grid.ColumnSpan="3" Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.3*"/>
                 <RowDefinition />

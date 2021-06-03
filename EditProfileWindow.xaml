@@ -1,0 +1,31 @@
+﻿<Window x:Class="MusicPlayer.EditProfileWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicPlayer"
+        mc:Ignorable="d"
+        Title="EditProfileWindow" Height="350" Width="300">
+    <Grid>
+        <StackPanel>
+            <Label Content="Username:" />
+            <TextBox x:Name="UsernameBox"/>
+
+            <Label Content="Email:" />
+            <TextBox x:Name="EmailBox" IsEnabled="False"/>
+
+            <Label Content="Password:" />
+            <TextBox x:Name="PasswdBox" />
+
+            <Label Content="Is Premium:" />
+            <TextBlock x:Name="isPremiumBox" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Edit" Click="EditClick" />
+                <Label />
+                <Label />
+                <Button Content="Submit" Click="SubmitClick" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
