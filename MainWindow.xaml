@@ -30,7 +30,6 @@
                     <MenuItem Header="Buy" />
                     <MenuItem Header="Logout" />
                 </MenuItem>
-                <MenuItem Header="New track" Click="CreateTrackClick"/>
                 <MenuItem Header="Refresh" />
                 <MenuItem Header="Exit" />
             </Menu>
@@ -57,9 +56,11 @@
                     </ListView.ItemTemplate>
                     <ListView.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Header="Create track" Click="CreateTrackClick" />
                             <MenuItem Header="Play now" Click="ContextTrackPlayNow"/>
                             <MenuItem Header="Play next" Click="ContextTrackPlayNext"/>
                             <MenuItem Header="Add to queue" Click="ContextAddToQueueClick"/>
+                            <MenuItem Header="Add to playlist" Click="ContextAddToPlaylist" />
                             <MenuItem Header="Edit" Click="ContextEditTrackClick" />
                             <MenuItem Header="Upload" Click="UploadTrackClick" />
                             <MenuItem Header="Like" Click="ContextLikeClick"/>
@@ -69,7 +70,23 @@
             </TabItem>
             <TabItem Header="Playlists">
                 <ListView x:Name="playlistsView">
-
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🎶" />
+                                <TextBlock Text="{Binding title}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Create playlist" Click="CreatePlaylistClick" />
+                            <MenuItem Header="Play next" Click="ContextPlaylistPlayNext"/>
+                            <MenuItem Header="Add to queue" Click="ContextPlaylistToQueueClick"/>
+                            <MenuItem Header="Edit" Click="ContextEditPlaylistClick" />
+                            <MenuItem Header="Delete" Click="ContextDeletePlaylistClick" />
+                        </ContextMenu>
+                    </ListView.ContextMenu>
                 </ListView>
             </TabItem>
             <TabItem Header="Next">

@@ -76,7 +76,6 @@ namespace MusicPlayer
             {
                 TracksCollection.Add(track);
             }
-            MessageBox.Show(TracksCollection.Count.ToString());
             TrackListIndex = 0;
             
         }
@@ -146,6 +145,8 @@ namespace MusicPlayer
             nextListView.SelectedItem = QueueList[TrackListIndex];
         }
 
+
+        #region tracks
         private void ContextTrackPlayNow(object sender, RoutedEventArgs e)
         {
             TrackDoubleClick(sender, null);
@@ -229,6 +230,42 @@ namespace MusicPlayer
                 }
             }
         }
+
+        private void ContextAddToPlaylist(object sender, RoutedEventArgs e)
+        {
+            if (tracksView.SelectedItem != null)
+            {
+                var track = (Track)tracksView.SelectedItem;
+                var playlists = new List<Playlist>();
+                try
+                {
+                    playlists = client.GetUsersPlaylists();
+                } catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                    return; 
+                }
+                var add = new ChoosePlaylistWindow(playlists);
+                add.ShowDialog();
+                var id = add.GetPlaylistId();
+                if (id != 0)
+                {
+                    try
+                    {
+                        client.AddToPlaylist(id, track.track_id);
+                    } catch (WebException err)
+                    {
+                        MessageBox.Show(err.Message);
+                        return;
+                    }
+                } else
+                {
+                    MessageBox.Show("Wrong value");
+                }
+            }
+        }
+
+        #endregion
 
         private void PlayNextButtonClick(object sender, RoutedEventArgs e)
         {
@@ -349,6 +386,107 @@ namespace MusicPlayer
                 MessageBox.Show(err.Message);
             }
         }
+
+        #endregion
+
+
+        #region playlist
+
+        private void CreatePlaylistClick(object sender, RoutedEventArgs e)
+        {
+            var win = new PlaylistWindow();
+            win.ShowDialog();
+            try
+            {
+                client.CreatePlaylist(win.playlistBox.Text);
+            } catch (WebException err)
+            {
+                MessageBox.Show(err.Message);
+            }
+        }
+
+        private void ContextPlaylistPlayNext(object sender, RoutedEventArgs e)
+        {
+            if (playlistsView.SelectedItem != null)
+            {
+                var playlist = (Playlist)playlistsView.SelectedItem;
+                var tracks = new List<Track>();
+
+                try
+                {
+                    tracks = client.GetPlaylist(playlist.playlist_id);
+                } catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
+
+                if (QueueList.Count <= TrackListIndex)
+                {
+                    foreach (var track in tracks)
+                    {
+                        QueueList.Add(track);
+                    }
+                    return;
+                }
+                foreach(var track in tracks)
+                {
+                    QueueList.Insert(TrackListIndex, track);
+                }
+            }
+        }
+
+        private void ContextPlaylistToQueueClick(object sender, RoutedEventArgs e)
+        {
+            if (playlistsView.SelectedItem != null)
+            {
+                var playlist = (Playlist)playlistsView.SelectedItem;
+                var tracks = new List<Track>();
+
+                try
+                {
+                    tracks = client.GetPlaylist(playlist.playlist_id);
+                }
+                catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
+
+                QueueList.Concat(tracks);
+            }
+        }
+
+        private void ContextEditPlaylistClick(object sender, RoutedEventArgs e)
+        {
+            if (playlistsView.SelectedItem != null)
+            {
+                var playlist = (Playlist)playlistsView.SelectedItem;
+                var win = new PlaylistWindow();
+                win.ShowDialog();
+                try
+                {
+                    client.UpdatePlaylist(win.playlistBox.Text, playlist.playlist_id);
+                }
+                catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
+            }
+        }
+
+        private void ContextDeletePlaylistClick(object sender, RoutedEventArgs e)
+        {
+            if (playlistsView.SelectedItem != null)
+            {
+                try
+                {
+                    client.DeletePlaylist(((Playlist)playlistsView.SelectedItem).playlist_id);
+                } catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
+            }
+        }
+
 
         #endregion
     }
