@@ -459,11 +459,23 @@ namespace MusicPlayerApi
             if (resp.StatusCode != HttpStatusCode.OK)
                 throw new Exception(resp.StatusCode.ToString());
         }
-        
+
+        public void RemoveFromPlaylist(int playlistId, int trackId)
+        {
+            var dict = new Dictionary<string, int>();
+            dict.Add("track_id", trackId);
+            var jsonString = JsonSerializer.Serialize(dict);
+
+            var resp = this.SendRequest(jsonString,
+                    this.GenerateUrl(Urls.PlaylistMod) + playlistId.ToString(), "DELETE");
+            if (resp.StatusCode != HttpStatusCode.OK)
+                throw new Exception(resp.StatusCode.ToString());
+        }
+
         //
         // uploading/downloading tracks
         //
-        
+
         public void UploadFile(int id, string path)
         {
             var boundaryString = "----someBoundaryString";

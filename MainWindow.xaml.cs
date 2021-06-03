@@ -37,6 +37,7 @@ namespace MusicPlayer
         public History trackHistory;
         public Likes likes;
         public Node CurrentNode;
+        public int ChoosedPlaylist = 0;
         int TrackListIndex;
 
         #endregion
@@ -85,6 +86,28 @@ namespace MusicPlayer
             playerSlider.Value = playerElement.Position.TotalSeconds;
         }
 
+        private void PlaylistBackClick(object sender, RoutedEventArgs e)
+        {
+            BackButton.Visibility = Visibility.Collapsed;
+            playlistsView.ItemsSource = playlists.playlists;
+        }
+
+        private void PlaylistsDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (playlistsView.SelectedItem != null) 
+            {
+                var pl = (Playlist)playlistsView.SelectedItem;
+                try
+                {
+                    playlistsView.ItemsSource = client.GetPlaylist(pl.playlist_id);
+                } catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
+                BackButton.Visibility = Visibility.Visible;
+                ChoosedPlaylist = pl.playlist_id;
+            }
+        }
 
         private void PlayerElementSourceUpdated(object sender, RoutedEventArgs e)
         {
@@ -477,12 +500,25 @@ namespace MusicPlayer
         {
             if (playlistsView.SelectedItem != null)
             {
-                try
+                if (BackButton.Visibility == Visibility.Collapsed)
                 {
-                    client.DeletePlaylist(((Playlist)playlistsView.SelectedItem).playlist_id);
-                } catch (WebException err)
+                    try
+                    {
+                        client.DeletePlaylist(((Playlist)playlistsView.SelectedItem).playlist_id);
+                    }
+                    catch (WebException err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+                } else
                 {
-                    MessageBox.Show(err.Message);
+                    try
+                    {
+                        client.RemoveFromPlaylist(ChoosedPlaylist, ((Track)playlistsView.SelectedItem).track_id);
+                    } catch (WebException err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
                 }
             }
         }

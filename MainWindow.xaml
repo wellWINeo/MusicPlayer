@@ -35,7 +35,7 @@
             </Menu>
         </ToolBar>
 
-        <TabControl Grid.Row="1" Grid.RowSpan="3" 
+        <TabControl Grid.Row="1" Grid.RowSpan="2" 
                     Grid.Column="0" Grid.ColumnSpan="3"
                     x:Name="myTabControl">
             <TabItem Header="Tracks">
@@ -69,25 +69,35 @@
                 </ListView>
             </TabItem>
             <TabItem Header="Playlists">
-                <ListView x:Name="playlistsView">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🎶" />
-                                <TextBlock Text="{Binding title}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                    <ListView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Create playlist" Click="CreatePlaylistClick" />
-                            <MenuItem Header="Play next" Click="ContextPlaylistPlayNext"/>
-                            <MenuItem Header="Add to queue" Click="ContextPlaylistToQueueClick"/>
-                            <MenuItem Header="Edit" Click="ContextEditPlaylistClick" />
-                            <MenuItem Header="Delete" Click="ContextDeletePlaylistClick" />
-                        </ContextMenu>
-                    </ListView.ContextMenu>
-                </ListView>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="0.1*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <ListView x:Name="playlistsView" Grid.Row="0"
+                              MouseDoubleClick="PlaylistsDoubleClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🎶" />
+                                    <TextBlock Text="{Binding title}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Create playlist" Click="CreatePlaylistClick" />
+                                <MenuItem Header="Play next" Click="ContextPlaylistPlayNext"/>
+                                <MenuItem Header="Add to queue" Click="ContextPlaylistToQueueClick"/>
+                                <MenuItem Header="Edit" Click="ContextEditPlaylistClick" />
+                                <MenuItem Header="Remove" Click="ContextDeletePlaylistClick" />
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                    </ListView>
+                    <Button Content="Back" Click="PlaylistBackClick" Grid.Row="1"
+                            x:Name="BackButton" Visibility="Collapsed"/>
+                </Grid>
             </TabItem>
             <TabItem Header="Next">
                 <ListView x:Name="nextListView" MouseDoubleClick="TrackDoubleClick">
