@@ -30,8 +30,8 @@
                     <MenuItem Header="Buy" />
                     <MenuItem Header="Logout" />
                 </MenuItem>
-                <MenuItem Header="Refresh" />
-                <MenuItem Header="Exit" />
+                <MenuItem Header="Refresh" Click="RefreshToolbarClick"/>
+                <MenuItem Header="Exit" Click="ExitButtonClick"/>
             </Menu>
         </ToolBar>
 

@@ -33,9 +33,12 @@ namespace MusicPlayer
         public ObservableCollection<Track> TracksCollection { get; set; }
         public string MusicFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         public ObservableCollection<Track> QueueList = new ObservableCollection<Track>();
-        public Playlists playlists;
-        public History trackHistory;
-        public Likes likes;
+        public ObservableCollection<Playlist> playlists = new ObservableCollection<Playlist>();
+        public ObservableCollection<MusicPlayerApi.History> trackHistory = new ObservableCollection<MusicPlayerApi.History>();
+        public ObservableCollection<Track> likes = new ObservableCollection<Track>();
+        //public Playlists playlists;
+        //public History trackHistory;
+        //public Likes likes;
         public Node CurrentNode;
         public int ChoosedPlaylist = 0;
         int TrackListIndex;
@@ -52,17 +55,16 @@ namespace MusicPlayer
             string historyDir = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "history");
             if (!Directory.Exists(historyDir))
                 Directory.CreateDirectory(historyDir);
-            trackHistory = new History(client);
-            playlists = new Playlists(client);
-            likes = new Likes(client);
 
             InitializeComponent();
             TracksCollection = new ObservableCollection<Track>();
             tracksView.ItemsSource = TracksCollection;
             nextListView.ItemsSource = QueueList;
-            playlistsView.ItemsSource = playlists.playlists;
-            historyListView.ItemsSource = trackHistory.HistoryList;
-            likesView.ItemsSource = likes.likes;
+            playlistsView.ItemsSource = playlists;
+            historyListView.ItemsSource = trackHistory;
+            likesView.ItemsSource = likes;
+
+            this.Updater();
 
             timer.Interval = TimeSpan.FromSeconds(0.1);
             timer.Tick += new EventHandler(timer_Tick);
@@ -86,10 +88,53 @@ namespace MusicPlayer
             playerSlider.Value = playerElement.Position.TotalSeconds;
         }
 
+        private void Updater()
+        {
+            try
+            {
+                TracksCollection = new ObservableCollection<Track>(client.GetAllTracks());
+                trackHistory = new ObservableCollection<MusicPlayerApi.History>(client.GetHistory());
+                
+                var likesList = new List<Track>();
+                var likesId = new List<int>();
+                try
+                {
+                    likesId = client.GetAllLikes();
+                }
+                catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
+
+                foreach (var id in likesId)
+                {
+                    try
+                    {
+                        likesList.Add(client.GetTrack(id));
+                    }
+                    catch (WebException err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+                }
+
+                likes = new ObservableCollection<Track>(likesList);
+            } catch (WebException err)
+            {
+                MessageBox.Show(err.Message);
+            }
+
+            tracksView.ItemsSource = TracksCollection;
+            nextListView.ItemsSource = QueueList;
+            playlistsView.ItemsSource = playlists;
+            historyListView.ItemsSource = trackHistory;
+            likesView.ItemsSource = likes;
+        }
+
         private void PlaylistBackClick(object sender, RoutedEventArgs e)
         {
             BackButton.Visibility = Visibility.Collapsed;
-            playlistsView.ItemsSource = playlists.playlists;
+            playlistsView.ItemsSource = playlists;
         }
 
         private void PlaylistsDoubleClick(object sender, MouseButtonEventArgs e)
@@ -389,6 +434,11 @@ namespace MusicPlayer
             }
         }
 
+        private void RefreshToolbarClick(object sender, RoutedEventArgs e)
+        {
+            this.Updater();
+        }
+
         private void EditProfileClick(object sender, RoutedEventArgs e)
         {
             var user = new User();
@@ -408,6 +458,11 @@ namespace MusicPlayer
             {
                 MessageBox.Show(err.Message);
             }
+        }
+
+        private void ExitButtonClick(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
         }
 
         #endregion
