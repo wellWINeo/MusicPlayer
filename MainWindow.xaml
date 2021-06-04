@@ -27,7 +27,7 @@
             <Menu>
                 <MenuItem Header="Profile">
                     <MenuItem Header="Edit" Click="EditProfileClick"/>
-                    <MenuItem Header="Buy" />
+                    <MenuItem Header="Buy" Click="BuyClick"/>
                     <MenuItem Header="Logout" />
                 </MenuItem>
                 <MenuItem Header="Refresh" Click="RefreshToolbarClick"/>
@@ -74,7 +74,7 @@
                         <RowDefinition />
                         <RowDefinition Height="0.1*"/>
                     </Grid.RowDefinitions>
-                    
+
                     <ListView x:Name="playlistsView" Grid.Row="0"
                               MouseDoubleClick="PlaylistsDoubleClick">
                         <ListView.ItemTemplate>
@@ -128,14 +128,6 @@
             </TabItem>
             <TabItem Header="History">
                 <ListView x:Name="historyListView" MouseDoubleClick="ListViewDoubleClick">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🕑 " />
-                                <TextBlock IsEnabled="False" Text="{Binding time}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
                 </ListView>
             </TabItem>
             <TabItem Header="Liked">
@@ -143,7 +135,7 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="♫ " />
+                                <TextBlock Text="♥ " />
                                 <TextBlock IsEnabled="False" Text="{Binding title}" TextWrapping="Wrap"/>
                                 <TextBlock Text=", " />
                                 <TextBlock IsEnabled="False" Text="{Binding artist}" TextWrapping="Wrap"/>
@@ -156,10 +148,19 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </TabItem>
+            <TabItem Header="Video">
+                <StackPanel>
+                    <MediaElement x:Name="playerElement" Visibility="Collapsed" MediaEnded="MediaPlayer_MediaEnded" 
+                                  MediaOpened="PlayerElementSourceUpdated"
+                                  Grid.Row="1" Grid.RowSpan="2"/>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Center" Content="Not available" 
+                           Visibility="Visible" x:Name="BuyPremium1"/>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Center" Content="(buy premium)" 
+                           Visibility="Visible" x:Name="BuyPremium2"/>
+                </StackPanel>
+            </TabItem>
         </TabControl>
-
-        <MediaElement x:Name="MediaPlayer" Visibility="Collapsed" MediaEnded="MediaPlayer_MediaEnded"/>
-
+        
         <Grid Grid.Row="3" Grid.ColumnSpan="3" Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.3*"/>
@@ -173,7 +174,6 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <MediaElement x:Name="playerElement" MediaOpened="PlayerElementSourceUpdated" />
             <Slider x:Name="playerSlider" Grid.Row="0" Grid.ColumnSpan="3" ValueChanged="SliderValueChanged" />
 
             <!-- Maximum="{Binding ElementName=playerElement, Path=Position.TotalSeconds}" -->

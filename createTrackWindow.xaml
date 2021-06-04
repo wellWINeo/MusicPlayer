@@ -19,7 +19,12 @@
 
             <Label Content="Year:" />
             <TextBox x:Name="yearBox" />
-
+            
+            <Label />
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Has video? " />
+                <CheckBox x:Name="HasVideoBox" Margin="0,5,0,0"/>
+            </StackPanel>
             <Label />
             <Button Content="Submit" HorizontalAlignment="Center" Click="createTrackClick"/>
         </StackPanel>

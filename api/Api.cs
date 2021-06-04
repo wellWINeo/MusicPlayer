@@ -27,6 +27,7 @@ namespace MusicPlayerApi
         public static string Playlist = "/api/playlists/";
         public static string PlaylistMod = "/api/playlists/mod/";
         public static string PlaylistsAll = "/api/playlists/all";
+        public static string BuyPremim = "/api/buy";
         
     }
 
@@ -536,6 +537,12 @@ namespace MusicPlayerApi
                         id.ToString(), path);
             }
         
+        }
+
+        public void BuyPremium()
+        {
+            var resp = this.SendRequest(String.Empty,
+               this.GenerateUrl(Urls.BuyPremim), "POST");
         }
 
     }

@@ -8,6 +8,7 @@ namespace MusicPlayerApi
         public string email { get; set; }
         public string password { get; set; }
         public bool is_premium { get; set; }
+        public string referal { get; set; }
     }
 
     public struct Track

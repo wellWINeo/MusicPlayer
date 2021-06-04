@@ -28,13 +28,14 @@ namespace MusicPlayer
     {
         #region vars
         bool isPause = false;
+        public bool isPremium = false;
         public Client client;
         public DispatcherTimer timer = new DispatcherTimer();
-        public ObservableCollection<Track> TracksCollection { get; set; }
+        public ObservableCollection<Track> TracksCollection = new ObservableCollection<Track>();
         public string MusicFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         public ObservableCollection<Track> QueueList = new ObservableCollection<Track>();
         public ObservableCollection<Playlist> playlists = new ObservableCollection<Playlist>();
-        public ObservableCollection<MusicPlayerApi.History> trackHistory = new ObservableCollection<MusicPlayerApi.History>();
+        public ObservableCollection<string> trackHistory = new ObservableCollection<string>();
         public ObservableCollection<Track> likes = new ObservableCollection<Track>();
         //public Playlists playlists;
         //public History trackHistory;
@@ -57,22 +58,30 @@ namespace MusicPlayer
                 Directory.CreateDirectory(historyDir);
 
             InitializeComponent();
-            TracksCollection = new ObservableCollection<Track>();
-            tracksView.ItemsSource = TracksCollection;
-            nextListView.ItemsSource = QueueList;
-            playlistsView.ItemsSource = playlists;
-            historyListView.ItemsSource = trackHistory;
-            likesView.ItemsSource = likes;
 
             this.Updater();
+
+            try
+            {
+                isPremium = client.GetMe().is_premium;
+            } catch (WebException err)
+            {
+                MessageBox.Show(err.Message);
+            }
+
+            if (isPremium)
+            {
+                playerElement.Visibility = Visibility.Visible;
+                BuyPremium1.Visibility = Visibility.Collapsed;
+                BuyPremium2.Visibility = Visibility.Collapsed;
+            }
+
 
             timer.Interval = TimeSpan.FromSeconds(0.1);
             timer.Tick += new EventHandler(timer_Tick);
             timer.IsEnabled = true;
 
             playerElement.LoadedBehavior = MediaState.Manual;
-            //playerElement.Source = new Uri(MusicFolder + "\\Запрещённые Барабанщики - Убили Негра.mp3");
-            //playerElement.Play();
 
             var tracks = client.GetAllTracks();
             foreach (var track in tracks)
@@ -93,7 +102,15 @@ namespace MusicPlayer
             try
             {
                 TracksCollection = new ObservableCollection<Track>(client.GetAllTracks());
-                trackHistory = new ObservableCollection<MusicPlayerApi.History>(client.GetHistory());
+                var tmp = client.GetHistory();
+                trackHistory = new ObservableCollection<string>();
+
+                foreach (var t in tmp)
+                {
+                    var track = client.GetTrack(t.track_id);
+                    var tmp_string = $"🕑 {track.title}, {track.artist} ({t.time})";
+                    trackHistory.Add(tmp_string);
+                }
                 
                 var likesList = new List<Track>();
                 var likesId = new List<int>();
@@ -163,6 +180,15 @@ namespace MusicPlayer
                 playerElement.LoadedBehavior = MediaState.Manual;
                 playerElement.Play();
                 playButton.Content = "||";
+                if (!isPremium)
+                {
+                    var rand = new Random(DateTime.Now.Second);
+                    var chance = rand.Next(5);
+                    if (chance == 1)
+                    {
+                        MessageBox.Show("Yoe are still not premium user! Buy premium version ☹");
+                    }
+                }
             }
         }
 
@@ -198,10 +224,19 @@ namespace MusicPlayer
                     QueueList.Add(track);
                 else
                     QueueList[TrackListIndex] = (Track)tracksView.SelectedItem;
-                //string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "music");
-                string path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), track.track_id.ToString() + ".mp3");
+                string path;
+                if (track.has_video)
+                    path = System.IO.Path.Combine(MusicFolder, track.track_id.ToString() + ".mp3");
+                else 
+                    path = System.IO.Path.Combine(MusicFolder, track.track_id.ToString() + ".mp4");
                 if (track.track_id == 0) { return;  }
-                this.client.DownloadTrack(track.track_id, path);
+                try
+                {
+                    this.client.DownloadTrack(track.track_id, path);
+                } catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
                 playerElement.Source = new Uri(path);
             }
         }
@@ -403,6 +438,30 @@ namespace MusicPlayer
 
         #region toolbar
 
+        public void BuyClick(object sender, RoutedEventArgs e)
+        {
+            bool is_ref = false;
+            try
+            {
+                var refer = client.GetMe().referal;
+                is_ref = (refer != "0");
+            } catch (WebException err)
+            {
+                MessageBox.Show(err.Message);
+                return;
+            }
+            var buyWin = new BuyWindow(is_ref);
+            buyWin.ShowDialog();
+            try
+            {
+                client.BuyPremium();
+            } catch (WebException err)
+            {
+                MessageBox.Show(err.Message);
+            }
+
+        }
+
         public void CreateTrackClick(object sender, RoutedEventArgs e)
         {
             var createTrackWindow = new createTrackWindow();
@@ -422,7 +481,7 @@ namespace MusicPlayer
                 artist = createTrackWindow.artistBox.Text,
                 genre = createTrackWindow.genreBox.Text,
                 year = year,
-                has_video = false
+                has_video = (bool)createTrackWindow.HasVideoBox.IsChecked
             };
             
             try

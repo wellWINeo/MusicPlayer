@@ -1,0 +1,24 @@
+﻿<Window x:Class="MusicPlayer.BuyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicPlayer"
+        mc:Ignorable="d"
+        Title="BuyWindow" Height="350" Width="350">
+    <Grid>
+        <StackPanel HorizontalAlignment="Center"
+                   VerticalAlignment="Center" Width="300" Height="300">
+            <Label Content="Buy premium version" />
+            <Label />
+            <Label Content="" x:Name="offerLabel"/>
+            <Label />
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Your payment: " />
+                <TextBox x:Name="paymentBox" Width="100"/>
+            </StackPanel>
+            <Label />
+            <Button Content="Submit" VerticalAlignment="Center" Click="BuyClick"/>
+        </StackPanel>
+    </Grid>
+</Window>
