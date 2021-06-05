@@ -1,20 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MusicPlayerApi;
+using System.IO;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.IO;
-
-using MusicPlayerApi;
 
 namespace MusicPlayer
 {
@@ -57,7 +45,8 @@ namespace MusicPlayer
                     }
                 }
                 this.Close();
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }

@@ -1,16 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MusicPlayer
 {
@@ -27,7 +16,8 @@ namespace MusicPlayer
             {
                 price *= 1 - 0.15;
                 offerLabel.Content = $"You have referal code. Your sale is 15%. ({price}$ insted of 100$";
-            } else
+            }
+            else
             {
                 offerLabel.Content = $"You need to pay - {price}$";
             }
@@ -44,7 +34,8 @@ namespace MusicPlayer
             try
             {
                 inputValue = Convert.ToDouble(paymentBox.Text);
-            } catch
+            }
+            catch
             {
                 return false;
             }

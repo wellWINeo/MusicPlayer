@@ -1,23 +1,15 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using MusicPlayerApi;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using System.Collections.ObjectModel;
-using MusicPlayerApi;
-using System.Net;
-using Microsoft.Win32;
 
 namespace MusicPlayer
 {
@@ -37,10 +29,6 @@ namespace MusicPlayer
         public ObservableCollection<Playlist> playlists = new ObservableCollection<Playlist>();
         public ObservableCollection<string> trackHistory = new ObservableCollection<string>();
         public ObservableCollection<Track> likes = new ObservableCollection<Track>();
-        //public Playlists playlists;
-        //public History trackHistory;
-        //public Likes likes;
-        public Node CurrentNode;
         public int ChoosedPlaylist = 0;
         int TrackListIndex;
 
@@ -64,7 +52,8 @@ namespace MusicPlayer
             try
             {
                 isPremium = client.GetMe().is_premium;
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }
@@ -89,12 +78,17 @@ namespace MusicPlayer
                 TracksCollection.Add(track);
             }
             TrackListIndex = 0;
-            
+
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
             playerSlider.Value = playerElement.Position.TotalSeconds;
+        }
+
+        private void Logout(object sender, RoutedEventArgs e)
+        {
+            File.Delete(".token");
         }
 
         private void Updater()
@@ -104,6 +98,7 @@ namespace MusicPlayer
                 TracksCollection = new ObservableCollection<Track>(client.GetAllTracks());
                 var tmp = client.GetHistory();
                 trackHistory = new ObservableCollection<string>();
+                playlists = new ObservableCollection<Playlist>(client.GetUsersPlaylists());
 
                 foreach (var t in tmp)
                 {
@@ -111,7 +106,7 @@ namespace MusicPlayer
                     var tmp_string = $"🕑 {track.title}, {track.artist} ({t.time})";
                     trackHistory.Add(tmp_string);
                 }
-                
+
                 var likesList = new List<Track>();
                 var likesId = new List<int>();
                 try
@@ -136,7 +131,8 @@ namespace MusicPlayer
                 }
 
                 likes = new ObservableCollection<Track>(likesList);
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }
@@ -156,18 +152,45 @@ namespace MusicPlayer
 
         private void PlaylistsDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (playlistsView.SelectedItem != null) 
+            if (playlistsView.SelectedItem != null)
             {
-                var pl = (Playlist)playlistsView.SelectedItem;
-                try
+                if (BackButton.Visibility == Visibility.Collapsed)
                 {
-                    playlistsView.ItemsSource = client.GetPlaylist(pl.playlist_id);
-                } catch (WebException err)
-                {
-                    MessageBox.Show(err.Message);
+                    var pl = (Playlist)playlistsView.SelectedItem;
+                    try
+                    {
+                        playlistsView.ItemsSource = client.GetPlaylist(pl.playlist_id);
+                    }
+                    catch (WebException err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+                    BackButton.Visibility = Visibility.Visible;
+                    ChoosedPlaylist = pl.playlist_id;
                 }
-                BackButton.Visibility = Visibility.Visible;
-                ChoosedPlaylist = pl.playlist_id;
+                else
+                {
+                    var track = (Track)playlistsView.SelectedItem;
+                    if (QueueList.Count == 0)
+                        QueueList.Add(track);
+                    else
+                        QueueList[TrackListIndex] = (Track)playlistsView.SelectedItem;
+                    string path;
+                    if (track.has_video)
+                        path = System.IO.Path.Combine(MusicFolder, track.track_id.ToString() + ".mp3");
+                    else
+                        path = System.IO.Path.Combine(MusicFolder, track.track_id.ToString() + ".mp4");
+                    if (track.track_id == 0) { return; }
+                    try
+                    {
+                        this.client.DownloadTrack(track.track_id, path);
+                    }
+                    catch (WebException err)
+                    {
+                        MessageBox.Show(err.Message);
+                    }
+                    playerElement.Source = new Uri(path);
+                }
             }
         }
 
@@ -227,13 +250,14 @@ namespace MusicPlayer
                 string path;
                 if (track.has_video)
                     path = System.IO.Path.Combine(MusicFolder, track.track_id.ToString() + ".mp3");
-                else 
+                else
                     path = System.IO.Path.Combine(MusicFolder, track.track_id.ToString() + ".mp4");
-                if (track.track_id == 0) { return;  }
+                if (track.track_id == 0) { return; }
                 try
                 {
                     this.client.DownloadTrack(track.track_id, path);
-                } catch (WebException err)
+                }
+                catch (WebException err)
                 {
                     MessageBox.Show(err.Message);
                 }
@@ -274,6 +298,22 @@ namespace MusicPlayer
             }
         }
 
+        private void ContextDeleteClick(object sender, RoutedEventArgs e)
+        {
+            if (tracksView.SelectedItem != null)
+            {
+                var id = ((Track)tracksView.SelectedItem).track_id;
+                try
+                {
+                    client.DeleteTrack(id);
+                }
+                catch (WebException err)
+                {
+                    MessageBox.Show(err.Message);
+                }
+            }
+        }
+
         private void ContextRemoveFromQueueclick(object sender, RoutedEventArgs e)
         {
             if (tracksView.SelectedItem != null)
@@ -294,7 +334,8 @@ namespace MusicPlayer
                 try
                 {
                     client.SetLike(((Track)tracksView.SelectedItem).track_id);
-                } catch (WebException err)
+                }
+                catch (WebException err)
                 {
                     MessageBox.Show(err.Message);
                 }
@@ -320,14 +361,17 @@ namespace MusicPlayer
                 try
                 {
                     track.year = Convert.ToInt32(editWin.yearBox.Text);
-                } catch {
+                }
+                catch
+                {
                     track.year = 0;
                 }
 
                 try
                 {
                     client.UpdateTrack(track.track_id, track);
-                } catch (WebException err)
+                }
+                catch (WebException err)
                 {
                     MessageBox.Show(err.Message);
                 }
@@ -343,10 +387,11 @@ namespace MusicPlayer
                 try
                 {
                     playlists = client.GetUsersPlaylists();
-                } catch (WebException err)
+                }
+                catch (WebException err)
                 {
                     MessageBox.Show(err.Message);
-                    return; 
+                    return;
                 }
                 var add = new ChoosePlaylistWindow(playlists);
                 add.ShowDialog();
@@ -356,12 +401,14 @@ namespace MusicPlayer
                     try
                     {
                         client.AddToPlaylist(id, track.track_id);
-                    } catch (WebException err)
+                    }
+                    catch (WebException err)
                     {
                         MessageBox.Show(err.Message);
                         return;
                     }
-                } else
+                }
+                else
                 {
                     MessageBox.Show("Wrong value");
                 }
@@ -380,12 +427,15 @@ namespace MusicPlayer
                 try
                 {
                     client.DownloadTrack(trackId, path);
-                } catch (WebException err)
+                }
+                catch (WebException err)
                 {
                     MessageBox.Show(err.Message);
                 }
                 playerElement.Source = new Uri(path);
-            } else {
+            }
+            else
+            {
                 MessageBox.Show("Playing last track!");
             }
         }
@@ -406,7 +456,8 @@ namespace MusicPlayer
                     MessageBox.Show(err.Message);
                 }
                 playerElement.Source = new Uri(path);
-            } else
+            }
+            else
             {
                 MessageBox.Show("Playing first track!");
             }
@@ -430,7 +481,9 @@ namespace MusicPlayer
                 try
                 {
                     client.UploadFile(track.track_id, path);
-                } catch (WebException err) {
+                }
+                catch (WebException err)
+                {
                     MessageBox.Show(err.Message);
                 }
             }
@@ -445,7 +498,8 @@ namespace MusicPlayer
             {
                 var refer = client.GetMe().referal;
                 is_ref = (refer != "0");
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
                 return;
@@ -455,7 +509,8 @@ namespace MusicPlayer
             try
             {
                 client.BuyPremium();
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }
@@ -470,7 +525,8 @@ namespace MusicPlayer
             try
             {
                 year = Convert.ToInt32(createTrackWindow.yearBox.Text);
-            } catch
+            }
+            catch
             {
                 MessageBox.Show("Wrong year!");
                 return;
@@ -483,11 +539,12 @@ namespace MusicPlayer
                 year = year,
                 has_video = (bool)createTrackWindow.HasVideoBox.IsChecked
             };
-            
+
             try
             {
                 client.CreateTrack(track);
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }
@@ -504,7 +561,8 @@ namespace MusicPlayer
             try
             {
                 user = client.GetMe();
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }
@@ -513,7 +571,8 @@ namespace MusicPlayer
             try
             {
                 client.UpdateUser(editWin.getUser());
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }
@@ -536,7 +595,8 @@ namespace MusicPlayer
             try
             {
                 client.CreatePlaylist(win.playlistBox.Text);
-            } catch (WebException err)
+            }
+            catch (WebException err)
             {
                 MessageBox.Show(err.Message);
             }
@@ -552,7 +612,8 @@ namespace MusicPlayer
                 try
                 {
                     tracks = client.GetPlaylist(playlist.playlist_id);
-                } catch (WebException err)
+                }
+                catch (WebException err)
                 {
                     MessageBox.Show(err.Message);
                 }
@@ -565,7 +626,7 @@ namespace MusicPlayer
                     }
                     return;
                 }
-                foreach(var track in tracks)
+                foreach (var track in tracks)
                 {
                     QueueList.Insert(TrackListIndex, track);
                 }
@@ -624,12 +685,14 @@ namespace MusicPlayer
                     {
                         MessageBox.Show(err.Message);
                     }
-                } else
+                }
+                else
                 {
                     try
                     {
                         client.RemoveFromPlaylist(ChoosedPlaylist, ((Track)playlistsView.SelectedItem).track_id);
-                    } catch (WebException err)
+                    }
+                    catch (WebException err)
                     {
                         MessageBox.Show(err.Message);
                     }

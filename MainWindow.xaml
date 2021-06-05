@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:MusicPlayer.Controls"
         xmlns:local="clr-namespace:MusicPlayer"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="400">
@@ -28,7 +27,7 @@
                 <MenuItem Header="Profile">
                     <MenuItem Header="Edit" Click="EditProfileClick"/>
                     <MenuItem Header="Buy" Click="BuyClick"/>
-                    <MenuItem Header="Logout" />
+                    <MenuItem Header="Logout" Click="Logout"/>
                 </MenuItem>
                 <MenuItem Header="Refresh" Click="RefreshToolbarClick"/>
                 <MenuItem Header="Exit" Click="ExitButtonClick"/>
@@ -63,7 +62,8 @@
                             <MenuItem Header="Add to playlist" Click="ContextAddToPlaylist" />
                             <MenuItem Header="Edit" Click="ContextEditTrackClick" />
                             <MenuItem Header="Upload" Click="UploadTrackClick" />
-                            <MenuItem Header="Like" Click="ContextLikeClick"/>
+                            <MenuItem Header="Delete" Click="ContextDeleteClick" />
+                            <MenuItem Header="Like" Click="ContextLikeClick" />
                         </ContextMenu>
                     </ListView.ContextMenu>
                 </ListView>

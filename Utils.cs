@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MusicPlayerApi;
 using System.IO;
-
-using MusicPlayerApi;
 using System.Net;
 using System.Windows;
 
@@ -25,7 +19,8 @@ namespace MusicPlayer
                 {
                     _ = client.GetMe();
                     return;
-                } catch (WebException err )
+                }
+                catch (WebException err)
                 {
                     MessageBox.Show(err.Message);
                 }
